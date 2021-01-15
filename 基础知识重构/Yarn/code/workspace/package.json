@@ -1,0 +1,8 @@
+{
+  "private": true,
+  "name": "workspace",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "workspaces": [ "workspace-a", "workspace-b" ]
+}
