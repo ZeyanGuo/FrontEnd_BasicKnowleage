@@ -1,0 +1,22 @@
+{
+  "name": "postcss_gulp",
+  "version": "1.0.0",
+  "main": "index.js",
+  "license": "MIT",
+  "scripts": {
+    "build:css": "gulp css"
+  },
+  "devDependencies": {
+    "autoprefixer": "^10.2.1",
+    "cssnext": "^1.8.4",
+    "gulp": "^4.0.2",
+    "gulp-postcss": "^9.0.0",
+    "postcss": "^8.2.4",
+    "postcss-import": "^14.0.0",
+    "postcss-preset-env": "^6.7.0",
+    "precss": "^4.0.0"
+  },
+  "browserslist": [
+    "ie >= 9"
+  ]
+}
