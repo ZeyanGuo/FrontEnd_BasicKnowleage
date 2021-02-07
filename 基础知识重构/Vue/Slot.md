@@ -69,6 +69,8 @@ return nodes
 
 在看了上述代码之后，知道如果`slotNodes`存在数据则直接返回，否则返回`fallback`（插槽默认内容生成的VNode），但是我们会有一个疑惑：`$slots`是在哪里定义的呢？
 
+### 3. renderSlots
+
 为了解答这个问题，首先我们得先看看`resolveSlots`方法
 
 ```typescript
@@ -108,5 +110,69 @@ for( let i = 0, l = children.length; i < l; i++ ){
   } else {
     (slots.default || (slots.default = [])).push(child);
   }
+}
+```
+
+`slots`获取到值之后，则进行一些过滤操作，然后直接返回有用的`slots`
+
+```javascript
+// 忽略只包含空格的slots
+for(const name in slots){
+  if(slots[name].every(isWhitespace)){ // every()方法用于测试一个数组内的所有元素是否都能通过某个指定函数的测试。它返回一个布尔值
+    delete slots[name];
+  }
+}
+return slots
+
+//相关逻辑
+function isWhitespace(node: VNode): boolean{
+  return (node.isComment && !node.asyncFactory) || node.text === ' ';
+}
+
+```
+
+### initRender()
+
+`initRender`方法则是对`vm.$slots`进行初始化的赋值
+
+```javascript
+const options = vm.$options;
+const parentVnode = vm.$vnode = options._parentVnode; // 替换父级树节点
+const renderContext = parentVnode && parentVnode.context;
+vm.$slots = resolveSlots(options._renderChildren, renderContext);
+```
+
+
+### genSlot
+
+`genSlot`则是用于生成`slot`的属性，代码如下
+```javascript
+function genSlot(el: ASTElement, state: CodegenState): string{
+  const slotName = el.slotName || '"default"' // 取slotName，若无，则直接命名为"default"
+  const children = genChildren(el, state) //对 children 进行 generate 操作
+  let res = `_t(${slotName}${children ? `,${children}` : ''}`
+  const attrs = el.attrs && `{${el.attrs.map(a => `${camelize(a.name)}:${a.value}`).join(',')}}` // 将 attrs 转换成对象形式
+  const bind = el.attrsMap['v-bind'] // 获取 slot 上的 v-bind 属性
+  // 若 attrs 或者 bind 属性存在但是 children 却木得，直接赋值第二参数为 null
+  if ((attrs || bind) && !children) {
+    res += `,null`
+  }
+  // 若 attrs 存在，则将 attrs 作为 `_t()` 的第三个参数(普通插槽的逻辑处理)
+  if (attrs) {
+    res += `,${attrs}`
+  }
+  // 若 bind 存在，这时如果 attrs 存在，则 bind 作为第三个参数，否则 bind 作为第四个参数(scoped-slot 的逻辑处理)
+  if (bind) {
+    res += `${attrs ? '' : ',null'},${bind}`
+  }
+  return res + ')'
+}
+```
+
+父组件编译阶段用到的`slotTarget`
+
+```javascript
+function processSlot(el){
+  if(el.tag ==='')
 }
 ```
