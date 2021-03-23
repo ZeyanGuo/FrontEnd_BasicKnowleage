@@ -74,3 +74,48 @@ exports.detail = async ctx => {
   ctx.body = `package:${ctx.params[0]}`;
 };
 ```
+
+# 重定向
+
+- 内部重定向
+```javascript
+module.exports = app => {
+  app.router.get('index', '/home/index', app.controller.home.index);
+  app.router.redirect('/', '/home/index', 302);
+};
+```
+- 外部重定向
+```javascript
+exports.index = async ctx => {
+  const type = ctx.query.type;
+  const q = ctx.query.q || 'nodejs';
+
+  if (type === 'bing') {
+    ctx.redirect(`http://cn.bing.com/search?q=${q}`);
+  } else {
+    ctx.redirect(`https://www.google.co.kr/search?q=${q}`);
+  }
+};
+```
+
+# 路由拆分
+路由可以以如下的方式进行拆分
+```javascript
+// app/router.js
+module.exports = app => {
+  require('./router/news')(app);
+  require('./router/admin')(app);
+};
+
+// app/router/news.js
+module.exports = app => {
+  app.router.get('/news/list', app.controller.news.list);
+  app.router.get('/news/detail', app.controller.news.detail);
+};
+
+// app/router/admin.js
+module.exports = app => {
+  app.router.get('/admin/user', app.controller.admin.user);
+  app.router.get('/admin/log', app.controller.admin.log);
+};
+```
